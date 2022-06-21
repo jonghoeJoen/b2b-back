@@ -37,11 +37,12 @@ def loadData():
         
         name = post_data.get('name')
         
-        data = loadBank()
+        data = loadStore()
         
         response_object['message'] ='Data added!'
         response_object['data'] = data
         return jsonify(response_object)
+
 
 @app.route('/test')
 def daum():
