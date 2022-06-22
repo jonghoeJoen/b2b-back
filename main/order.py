@@ -1,4 +1,5 @@
 import datetime
+from tracemalloc import start
 from flask import Blueprint, jsonify, make_response, request
 from pymysql import Connection
 import pymysql
@@ -43,14 +44,23 @@ def createOrder():
 
 @blueprint_order.route("/get-all", methods=['POST'])
 def Order():
+    getData = request.get_json()
+    print(getData)
+    start_time = getData['startTime']
+    end_time = getData['endTime']
+    text = getData['text']
     conn = None
     cursor = None
-    now = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-    print(now)
     try:    
         sql = """ 
-            select * from tb_order_history LEFT JOIN tb_store ON tb_order_history.store_id = tb_store.id
+            select * FROM tb_order_history history LEFT JOIN tb_store store ON history.store_id = store.id where 1=1
         """
+        if (start_time != '') :
+            sql += "AND history.created_date >= '" + start_time + " 00:00:00'"
+        if (end_time != '') :
+            sql += "AND history.created_date <= '" + end_time + " 23:59:59'"
+        if (text != '') :
+            sql += "AND store.store_name like '%" + text + "%'"
         # data = (order['store_id'] , order['item'], order['color'], order['size'], order['quantity'], now, now)
         conn = pymysql.connect(host = 'meta-soft.iptime.org', # 디비 주소 //localhost
                                 user = 'root',                 # 디비 접속 계정
