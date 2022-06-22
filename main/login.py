@@ -28,7 +28,8 @@ def login_get_info():
         sql = """
             select
                 tb_user.password,
-                tb_role_user.role_id
+                tb_role_user.role_id,
+                tb_user.id
             from tb_user
             JOIN
             tb_role_user
@@ -40,15 +41,11 @@ def login_get_info():
         row = cursor.fetchone()
         print(row)
         if check_password_hash(row[0], password) is True:
-            print("ㅇㅇㅇ")
-            # JWT 토큰에는, payload와 시크릿키가 필요합니다.
-            # 시크릿키가 있어야 토큰을 디코딩(=풀기) 해서 payload 값을 볼 수 있습니다.
-            # 아래에선 id와 exp를 담았습니다. 즉, JWT 토큰을 풀면 유저ID 값을 알 수 있습니다.
-            # exp에는 만료시간을 넣어줍니다. 만료시간이 지나면, 시크릿키로 토큰을 풀 때 만료되었다고 에러가 납니다.
             payload = {
                 'username': username,
                 'role': row[1],
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+                'userId': row[2]
             }
             token = jwt.encode(payload, config.JWT_SECRET_KEY, algorithm='HS256')
             return make_response(jsonify({'token': token}), 200)
