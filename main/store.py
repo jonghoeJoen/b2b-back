@@ -10,13 +10,20 @@ blueprint_shop = Blueprint("shop", __name__, url_prefix="/shop")
 
 @blueprint_shop.route("/get-all", methods=['POST'])
 def read():
+    per_page=20
     conn = None
     cursor = None
+    getData = request.get_json()
+    print(getData)
     try:
-        # user = request.get_json()
-        # hashed_password = generate_password_hash(user['password'])
+        getData = request.get_json()
         now = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         sql = "select * from tb_store"
+        if (getData['page']): 
+            page = getData['page'] - 1
+            start_at = page*per_page
+            sql += " LIMIT " + str(start_at) + ', ' + str(per_page)
+            print(sql)
         # data = (user['username'], hashed_password, user['storeName'], None, "T", now, now)
         conn = pymysql.connect(host = 'meta-soft.iptime.org', # 디비 주소 //localhost
                                 user = 'root',                 # 디비 접속 계정

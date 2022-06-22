@@ -44,6 +44,7 @@ def createOrder():
 
 @blueprint_order.route("/get-all", methods=['POST'])
 def Order():
+    per_page=20
     getData = request.get_json()
     print(getData)
     start_time = getData['startTime']
@@ -52,7 +53,9 @@ def Order():
     user_id = getData['userId']
     conn = None
     cursor = None
-    try:    
+    try:
+        page = getData['page']
+        start_at = page*per_page
         sql = """ 
             select * FROM tb_order_history history LEFT JOIN tb_store store ON history.store_id = store.id where 1=1
         """
@@ -64,6 +67,8 @@ def Order():
             sql += "AND store.store_name like '%" + text + "%'"
         if (user_id != '') :
             sql += "AND history.user_id = '" + user_id + "'"
+        # sql += (" limit %s, %s", (start_at, per_page))
+        print(sql)
         # data = (order['store_id'] , order['item'], order['color'], order['size'], order['quantity'], now, now)
         conn = pymysql.connect(host = 'meta-soft.iptime.org', # 디비 주소 //localhost
                                 user = 'root',                 # 디비 접속 계정
