@@ -21,51 +21,47 @@ def login_get_info():
                                 port = 53306,                  # 포트
                                 charset = 'utf8')
     cursor = conn.cursor()
+    req = request.get_json() 
+    username = req['username']
+    password = req['password']
     try:
-        req = request.get_json() 
-        username = req['username']
-        password = req['password']
-        
         sql = """
             select
-                password
+                tb_user.password,
+                tb_role_user.role_id
             from tb_user
-            where username=%s
+            JOIN
+            tb_role_user
+            ON
+                tb_role_user.user_id = tb_user.id
+            where tb_user.username=%s
         """
-        # conn = pymysql.connect(host = 'meta-soft.iptime.org', # 디비 주소 //localhost
-        #                         user = 'root',                 # 디비 접속 계정
-        #                         password = 'root',             # 디비 접속 비번
-        #                         db = 'temp',               # 데이터 베이스 이름
-        #                         port = 53306,                  # 포트
-        #                         charset = 'utf8')
-        # cursor = conn.cursor()
         cursor.execute(sql, username)
         row = cursor.fetchone()
+        print(row)
         if check_password_hash(row[0], password) is True:
+            print("ㅇㅇㅇ")
             # JWT 토큰에는, payload와 시크릿키가 필요합니다.
             # 시크릿키가 있어야 토큰을 디코딩(=풀기) 해서 payload 값을 볼 수 있습니다.
             # 아래에선 id와 exp를 담았습니다. 즉, JWT 토큰을 풀면 유저ID 값을 알 수 있습니다.
             # exp에는 만료시간을 넣어줍니다. 만료시간이 지나면, 시크릿키로 토큰을 풀 때 만료되었다고 에러가 납니다.
             payload = {
-                'id': username,
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
+                'username': username,
+                'role': row[1],
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
             }
             token = jwt.encode(payload, config.JWT_SECRET_KEY, algorithm='HS256')
-
-            # token을 줍니다.
-            # return jsonify({'result': 'success', 'token': token}), 200
-            return make_response(jsonify({'result': 'success', 'token': token}), 200)
-        # 찾지 못하면
+            return make_response(jsonify({'token': token}), 200)
         else:
+            print("패스워드 틀림")
             # return jsonify({'result': 'fail', 'msg': '아이디/비밀번호가 일치하지 않습니다.'})
-            return "300"
+            return jsonify({'message': 'User Does Not Exist', "authenticated": False}), 401
     except Exception as e:
         print(e)
     finally:
         cursor.close() 
         conn.close()
-        return "500"
-        
+    
     # if username is None or password is None:
     #     return redirect('/relogin')
 

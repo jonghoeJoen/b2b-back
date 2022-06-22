@@ -30,9 +30,9 @@ def sign_up():
         cursor = conn.cursor()
         cursor.execute(sql, data)
         conn.commit()
-        return '200'
+        return 'success'
     except Exception as e:
-        print(e)
+        return e
     finally:
         cursor.close() 
         conn.close()
