@@ -49,6 +49,7 @@ def Order():
     start_time = getData['startTime']
     end_time = getData['endTime']
     text = getData['text']
+    user_id = getData['userId']
     conn = None
     cursor = None
     try:    
@@ -61,6 +62,8 @@ def Order():
             sql += "AND history.created_date <= '" + end_time + " 23:59:59'"
         if (text != '') :
             sql += "AND store.store_name like '%" + text + "%'"
+        if (user_id != '') :
+            sql += "AND history.user_id = '" + user_id + "'"
         # data = (order['store_id'] , order['item'], order['color'], order['size'], order['quantity'], now, now)
         conn = pymysql.connect(host = 'meta-soft.iptime.org', # 디비 주소 //localhost
                                 user = 'root',                 # 디비 접속 계정
