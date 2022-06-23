@@ -29,7 +29,8 @@ def login_get_info():
             select
                 tb_user.password,
                 tb_role_user.role_id,
-                tb_user.id
+                tb_user.id,
+                tb_user.store_id
             from tb_user
             JOIN
             tb_role_user
@@ -45,7 +46,8 @@ def login_get_info():
                 'username': username,
                 'role': row[1],
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1),
-                'userId': row[2]
+                'userId': row[2],
+                'storeId': row[3]
             }
             token = jwt.encode(payload, config.JWT_SECRET_KEY, algorithm='HS256')
             return make_response(jsonify({'token': token}), 200)
