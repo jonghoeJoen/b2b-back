@@ -63,7 +63,7 @@ def Order():
         if (getData['text'] != '') :
             sql += "AND store.store_name like '%" + getData['text'] + "%'"
         if (getData['userId'] != '') :
-            sql += "AND history.user_id = '" + getData['userId'] + "'"        
+            sql += "AND history.user_id = '" + getData['userId'] + "'"
         if (getData['storeId'] != '') :
             sql += "AND history.store_id = '" + getData['storeId'] + "'"
         # sql += (" limit %s, %s", (start_at, per_page))
