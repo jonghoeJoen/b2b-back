@@ -45,29 +45,27 @@ def createOrder():
 
 @blueprint_order.route("/get-all", methods=['POST'])
 def Order():
-    per_page=20
+    # per_page=20
     getData = request.get_json()
     print(getData)
-    start_time = getData['startTime']
-    end_time = getData['endTime']
-    text = getData['text']
-    user_id = getData['userId']
     conn = None
     cursor = None
     try:
-        page = getData['page']
-        start_at = page*per_page
+        # page = getData['page']
+        # start_at = page*per_page
         sql = """ 
             select * FROM tb_order_history history LEFT JOIN tb_store store ON history.store_id = store.id where 1=1
         """
-        if (start_time != '') :
-            sql += "AND history.created_date >= '" + start_time + " 00:00:00'"
-        if (end_time != '') :
-            sql += "AND history.created_date <= '" + end_time + " 23:59:59'"
-        if (text != '') :
-            sql += "AND store.store_name like '%" + text + "%'"
-        if (user_id != '') :
-            sql += "AND history.user_id = '" + user_id + "'"
+        if (getData['startTime'] != '') :
+            sql += "AND history.created_date >= '" + getData['startTime'] + " 00:00:00'"
+        if (getData['endTime'] != '') :
+            sql += "AND history.created_date <= '" +  getData['endTime'] + " 23:59:59'"
+        if (getData['text'] != '') :
+            sql += "AND store.store_name like '%" + getData['text'] + "%'"
+        if (getData['userId'] != '') :
+            sql += "AND history.user_id = '" + getData['userId'] + "'"        
+        if (getData['storeId'] != '') :
+            sql += "AND history.store_id = '" + getData['storeId'] + "'"
         # sql += (" limit %s, %s", (start_at, per_page))
         print(sql)
         # data = (order['store_id'] , order['item'], order['color'], order['size'], order['quantity'], now, now)
