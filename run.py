@@ -1,11 +1,12 @@
 from flask import jsonify, make_response, redirect, request
 from main import Cors, app
-from flask_login import LoginManager
-import jwt
+# import jwt
 import config
+import model
 
-login_manager = LoginManager()
-login_manager.init_app(app)
+
+# login_manager = LoginManager()
+# login_manager.init_app(app)
 
 @app.route('/get-token', methods=["POST","GET"])
 def home():
@@ -17,6 +18,12 @@ def home():
         return "ExpiredSignatureError"
     except jwt.exceptions.DecodeError:
         return "DecodeError"
+
+# @app.route('/dddd', methods=["POST","GET"])
+# def dddd():
+#     print("_______________________________________________________________")
+#     print(model.PageFragment.limitOffset())
+#     print("후" + model.PageFragment.limitOffset() % ('12', '34'))
 
 if __name__ == "__main__": 
     app.run(debug=True)
