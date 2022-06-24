@@ -18,8 +18,10 @@ def read():
     print(getData)
     try:
         getData = request.get_json()
-        now = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-        sql = "select * from tb_store"
+        # now = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        sql = "select * from tb_store where 1=1 "
+        if (getData['text'] != '') :
+            sql += "AND store_name like '%" + getData['text'] + "%'"
         if (getData['page']): 
             page = getData['page'] - 1
             start_at = page*per_page
