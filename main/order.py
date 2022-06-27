@@ -50,22 +50,30 @@ def Order():
     print(getData)
     conn = None
     cursor = None
+
     try:
-        # page = getData['page']
-        # start_at = page*per_page
         sql = """ 
-            select * FROM tb_order_history history LEFT JOIN tb_store store ON history.store_id = store.id where 1=1
+            select *,
+            user.name as user_name,
+            user.mobile_no as user_mobile_no
+            FROM tb_order_history history 
+            LEFT JOIN tb_store store 
+            ON history.store_id = store.id
+            LEFT JOIN tb_user user 
+            ON history.user_id = user.id where 1=1
         """
+        # print(type(getData['userId']) + "\n")
+        print(getData['userId'])
+        if (getData['userId'] != '' and getData['userId'] != None):
+            sql += " AND history.user_id = " + str(getData['userId'])
         if (getData['startTime'] != '') :
-            sql += "AND history.created_date >= '" + getData['startTime'] + " 00:00:00'"
+            sql += " AND history.created_date >= '" + getData['startTime'] + " 00:00:00'"
         if (getData['endTime'] != '') :
-            sql += "AND history.created_date <= '" +  getData['endTime'] + " 23:59:59'"
+            sql += " AND history.created_date <= '" +  getData['endTime'] + " 23:59:59'"
         if (getData['text'] != '') :
-            sql += "AND store.store_name like '%" + getData['text'] + "%'"
-        if (getData['userId'] != '') :
-            sql += "AND history.user_id = '" + getData['userId'] + "'"
+            sql += " AND store.store_name like '%" + getData['text'] + "%'"
         if (getData['storeId'] != '') :
-            sql += "AND history.store_id = '" + getData['storeId'] + "'"
+            sql += " AND history.store_id = '" + str(getData['storeId']) + "'"
         # sql += (" limit %s, %s", (start_at, per_page))
         print(sql)
         # data = (order['store_id'] , order['item'], order['color'], order['size'], order['quantity'], now, now)

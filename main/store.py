@@ -15,10 +15,15 @@ def read():
     conn = None
     cursor = None
     getData = request.get_json()
+    print("getData")
     print(getData)
     try:
-        # now = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-        sql = "select * from tb_store JOIN tb_code code ON tb_store.building_num = code.id where 1=1 "
+        sql = """
+            select * 
+            from tb_store 
+            JOIN tb_code code 
+            ON tb_store.building_num = code.id where 1=1 
+        """
         if (getData['text'] != '') :
             sql += "AND store_name like '%" + getData['text'] + "%' "
         if (getData['buildingNum'] != '') :
@@ -28,7 +33,6 @@ def read():
             start_at = page*per_page
             sql += " LIMIT " + str(start_at) + ', ' + str(per_page)
         print(sql)
-        # data = (user['username'], hashed_password, user['storeName'], None, "T", now, now)
         conn = pymysql.connect(host = 'meta-soft.iptime.org', # 디비 주소 //localhost
                                 user = 'root',                 # 디비 접속 계정
                                 password = 'root',             # 디비 접속 비번

@@ -17,7 +17,7 @@ def read():
         getData = request.get_json()
         sql = "select * from tb_favorite favor JOIN tb_store store ON favor.store_id = store.id JOIN tb_code code ON store.building_num = code.id where 1=1 "
         if (getData['search']['userId']): 
-            sql += "AND user_id = '" + getData['search']['userId'] + "'"
+            sql += "AND user_id = '" + str(getData['search']['userId']) + "'"
             print(sql)
         # data = (user['username'], hashed_password, user['storeName'], None, "T", now, now)
         conn = pymysql.connect(host = 'meta-soft.iptime.org', # 디비 주소 //localhost
