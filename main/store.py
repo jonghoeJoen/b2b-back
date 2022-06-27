@@ -5,6 +5,7 @@ import pymysql
 from sqlalchemy import null
 from werkzeug.security import generate_password_hash, check_password_hash
 import model
+import math
 
 blueprint_shop = Blueprint("shop", __name__, url_prefix="/shop")
 
@@ -15,11 +16,9 @@ def read():
     conn = None
     cursor = None
     getData = request.get_json()
-    print("getData")
-    print(getData)
     try:
         sql = """
-            select * 
+            select *
             from tb_store 
             JOIN tb_code code 
             ON tb_store.building_num = code.id where 1=1 
@@ -32,6 +31,7 @@ def read():
             page = getData['page'] - 1
             start_at = page*per_page
             sql += " LIMIT " + str(start_at) + ', ' + str(per_page)
+
         print(sql)
         conn = pymysql.connect(host = 'meta-soft.iptime.org', # 디비 주소 //localhost
                                 user = 'root',                 # 디비 접속 계정
@@ -41,11 +41,31 @@ def read():
                                 charset = 'utf8',
                                 cursorclass = pymysql.cursors.DictCursor)
         cursor = conn.cursor()
-
         cursor.execute(sql)
         row = cursor.fetchall()
-        conn.commit()
-        return make_response(jsonify({'result': 'success', 'data': row}), 200)
+        # conn.commit()
+
+        sql = """
+            select count(*) as total_rows
+            from tb_store 
+            JOIN tb_code code 
+            ON tb_store.building_num = code.id where 1=1 
+        """
+        if (getData['text'] != '') :
+            sql += "AND store_name like '%" + getData['text'] + "%' "
+        if (getData['buildingNum'] != '') :
+            sql += "AND building_num = '" + str(getData['buildingNum']) + "' "
+        if (getData['page']): 
+            page = getData['page'] - 1
+            start_at = page*per_page
+            sql += " LIMIT " + str(start_at) + ', ' + str(per_page)
+
+        print(sql)
+        cursor.execute(sql)
+        # total_pages = math.ceil(cursor.fetchall()[0]['total_rows'] / per_page)
+        total_pages = cursor.fetchall()[0]['total_rows'];
+
+        return make_response(jsonify({'result': 'success', 'data': row, 'total_pages': total_pages}), 200)
     except Exception as e:
         print(e)
         return 'false'
@@ -89,7 +109,6 @@ def loadStore():
     row = None
     cursor = None
     now = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-    print(now)
     try:
         data = request.get_json()
         id = data['id']
@@ -117,7 +136,6 @@ def getAllPaging():
     conn = None
     cursor = None
     getData = request.get_json()
-    print(getData)
     try:
         getData = request.get_json()
 
