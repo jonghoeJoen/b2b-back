@@ -15,7 +15,7 @@ def read():
     cursor = None
     try:
         getData = request.get_json()
-        sql = "select * from tb_favorite favor JOIN tb_store store ON favor.store_id = store.id where 1=1 "
+        sql = "select * from tb_favorite favor JOIN tb_store store ON favor.store_id = store.id JOIN tb_code code ON store.building_num = code.id where 1=1 "
         if (getData['search']['userId']): 
             sql += "AND user_id = '" + getData['search']['userId'] + "'"
             print(sql)

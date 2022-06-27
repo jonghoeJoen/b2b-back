@@ -63,7 +63,7 @@ def Order():
         if (getData['text'] != '') :
             sql += "AND store.store_name like '%" + getData['text'] + "%'"
         if (getData['userId'] != '') :
-            sql += "AND history.user_id = '" + getData['userId'] + "'"        
+            sql += "AND history.user_id = '" + getData['userId'] + "'"
         if (getData['storeId'] != '') :
             sql += "AND history.store_id = '" + getData['storeId'] + "'"
         # sql += (" limit %s, %s", (start_at, per_page))
@@ -103,7 +103,7 @@ def modifyOrderList():
                 ON DUPLICATE KEY UPDATE `available_status` = VALUES(`available_status`), `comment` = VALUES(`comment`), `last_modified_date` = VALUES(`last_modified_date`)
                 """
             
-            data = (order['id'], order['store_id'], order['user_id'], order['item'], order['color'], order['size'], order['quantity'], order['available_status'], order['comment'],  now, now)
+            data = (order['id'], order['store_id'], order['user_id'], order['item'], order['color'], order['size'], order['quantity'], order['available_status'], order['comment'], now, now)
             conn = pymysql.connect(host = 'meta-soft.iptime.org', # 디비 주소 //localhost
                                     user = 'root',                 # 디비 접속 계정
                                     password = 'root',             # 디비 접속 비번
