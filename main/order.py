@@ -94,7 +94,6 @@ def modifyOrderList():
     conn = None
     cursor = None
     getData = request.get_json()
-    print(getData[0])
     try:    
         for order in getData:
             now = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
