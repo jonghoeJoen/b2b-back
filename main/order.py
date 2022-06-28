@@ -17,13 +17,14 @@ def createOrder():
     cursor = None
     getData = request.get_json()
     orderData = getData['data']
+    print(orderData)
     try:    
         for order in orderData:
             now = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
             sql = """ 
-                insert into tb_order_history (store_id, user_id, item, color, size, quantity, created_date, last_modified_date) values(%s, %s, %s, %s, %s, %s, %s, %s)
+                insert into tb_order_history (store_id, user_id, item, color, size, quantity, created_date, last_modified_date, pickup_date) values(%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            data = (order['store_id'], order['user_id'], order['item'], order['color'], order['size'], order['quantity'], now, now)
+            data = (order['store_id'], order['user_id'], order['item'], order['color'], order['size'], order['quantity'], now, now, order['pickupDate'])
             conn = pymysql.connect(host = 'meta-soft.iptime.org', # 디비 주소 //localhost
                                     user = 'root',                 # 디비 접속 계정
                                     password = 'root',             # 디비 접속 비번
@@ -45,12 +46,10 @@ def createOrder():
 
 @blueprint_order.route("/get-all", methods=['POST'])
 def Order():
-    # per_page=20
+    per_page=20
     getData = request.get_json()
-    print(getData)
     conn = None
     cursor = None
-
     try:
         sql = """ 
             select *,
@@ -62,8 +61,7 @@ def Order():
             LEFT JOIN tb_user user 
             ON history.user_id = user.id where 1=1
         """
-        # print(type(getData['userId']) + "\n")
-        print(getData['userId'])
+        print(getData)
         if (getData['userId'] != '' and getData['userId'] != None):
             sql += " AND history.user_id = " + str(getData['userId'])
         if (getData['startTime'] != '') :
@@ -74,8 +72,14 @@ def Order():
             sql += " AND store.store_name like '%" + getData['text'] + "%'"
         if (getData['storeId'] != '') :
             sql += " AND history.store_id = '" + str(getData['storeId']) + "'"
-        # sql += (" limit %s, %s", (start_at, per_page))
-        print(sql)
+        if (getData['page']): 
+            page = getData['page'] - 1
+            start_at = page*per_page
+            sql += " LIMIT " + str(start_at) + ', ' + str(per_page)
+        # 주문내역 리스트 (판매처)일 경우,  
+        # if getData['useType'] is 'customer':
+        # sql += " ORDER BY history."
+        print(sql)            
         # data = (order['store_id'] , order['item'], order['color'], order['size'], order['quantity'], now, now)
         conn = pymysql.connect(host = 'meta-soft.iptime.org', # 디비 주소 //localhost
                                 user = 'root',                 # 디비 접속 계정
@@ -87,8 +91,30 @@ def Order():
         cursor = conn.cursor()
         cursor.execute(sql)
         row = cursor.fetchall()
-        conn.commit()
-        return make_response(jsonify({'result': 'success', 'data': row}), 200)
+        print(row)
+        
+        sql = """ 
+            select count(*) as total_rows
+            FROM tb_order_history history 
+            LEFT JOIN tb_store store 
+            ON history.store_id = store.id
+            LEFT JOIN tb_user user 
+            ON history.user_id = user.id where 1=1
+        """
+        if (getData['userId'] != '' and getData['userId'] != None):
+            sql += " AND history.user_id = " + str(getData['userId'])
+        if (getData['startTime'] != '') :
+            sql += " AND history.created_date >= '" + getData['startTime'] + " 00:00:00'"
+        if (getData['endTime'] != '') :
+            sql += " AND history.created_date <= '" +  getData['endTime'] + " 23:59:59'"
+        if (getData['text'] != '') :
+            sql += " AND store.store_name like '%" + getData['text'] + "%'"
+        if (getData['storeId'] != '') :
+            sql += " AND history.store_id = '" + str(getData['storeId']) + "'"
+        cursor.execute(sql)
+        total_pages = cursor.fetchall()[0]['total_rows']
+        
+        return make_response(jsonify({'result': 'success', 'data': row, 'total_rows': total_pages}), 200)
     except Exception as e:
         print(e)
         return 'false'
@@ -119,7 +145,6 @@ def modifyOrderList():
                                     port = 53306,                  # 포트
                                     charset = 'utf8')
             cursor = conn.cursor()
-            print(cursor)
             cursor.execute(sql, data)
             conn.commit()
             # return make_response(jsonify({'result': 'success', 'data': row}), 200)

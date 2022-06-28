@@ -11,13 +11,26 @@ blueprint_favor = Blueprint("favor", __name__, url_prefix="/favor")
 
 @blueprint_favor.route("/get-all", methods=['POST'])
 def read():
+    per_page=20
     conn = None
     cursor = None
     try:
         getData = request.get_json()
-        sql = "select * from tb_favorite favor JOIN tb_store store ON favor.store_id = store.id JOIN tb_code code ON store.building_num = code.id where 1=1 "
+        sql = """
+            select * 
+            from tb_favorite favor 
+            JOIN tb_store store 
+            ON favor.store_id = store.id 
+            JOIN tb_code code 
+            ON store.building_num = code.id 
+            where 1=1 
+        """
         if (getData['search']['userId']): 
             sql += "AND user_id = '" + str(getData['search']['userId']) + "'"
+        if (getData['page']): 
+            page = getData['page'] - 1
+            start_at = page*per_page
+            sql += " LIMIT " + str(start_at) + ', ' + str(per_page)
             print(sql)
         # data = (user['username'], hashed_password, user['storeName'], None, "T", now, now)
         conn = pymysql.connect(host = 'meta-soft.iptime.org', # 디비 주소 //localhost
@@ -30,9 +43,22 @@ def read():
         cursor = conn.cursor()
         cursor.execute(sql)
         row = cursor.fetchall()
-        conn.commit()
-        # return 'true' 
-        return make_response(jsonify({'result': 'success', 'data': row}), 200)
+
+        sql = """
+            select count(*) as total_rows
+            from tb_favorite favor 
+            JOIN tb_store store 
+            ON favor.store_id = store.id 
+            JOIN tb_code code 
+            ON store.building_num = code.id 
+            where 1=1 
+        """
+        if (getData['search']['userId']): 
+            sql += "AND user_id = '" + str(getData['search']['userId']) + "'"
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        total_pages = cursor.fetchall()[0]['total_rows']
+        return make_response(jsonify({'result': 'success', 'data': row, 'total_pages': total_pages}), 200)
     except Exception as e:
         print(e)
         return 'fail' 
