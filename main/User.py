@@ -4,8 +4,6 @@ from pymysql import Connection
 import pymysql
 from sqlalchemy import null
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin
-from flask_login import LoginManager
 
 blueprint_user = Blueprint("User", __name__, url_prefix="/user")
 
@@ -88,6 +86,36 @@ def seller_sign_up():
         conn.commit()
         return 'success'
     except Exception as err:
+        print(err)
+        return "error"
+    finally:
+        cursor.close() 
+        conn.close()
+
+@blueprint_user.route("/get-user", methods=['GET'])
+def getUser(): 
+    conn = None
+    cursor = None
+    print(request.args)
+    try: 
+        sql = """
+            select *
+            from tb_user
+            where id = %s
+        """
+        conn = pymysql.connect(host = 'meta-soft.iptime.org', # 디비 주소 //localhost
+                                user = 'root',                 # 디비 접속 계정
+                                password = 'root',             # 디비 접속 비번
+                                db = 'temp',               # 데이터 베이스 이름
+                                port = 53306,                  # 포트
+                                charset = 'utf8')
+        cursor = conn.cursor()
+        cursor.execute(sql, request.args.get('id'))
+        row = cursor.fetchone()
+        print(row)
+        return make_response(jsonify({'name': row[3], 'phone_no': row[10]}), 200)
+    except Exception as err:
+        print("이게 문제")
         print(err)
         return "error"
     finally:

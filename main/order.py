@@ -1,13 +1,6 @@
 import datetime
-from tracemalloc import start
-from webbrowser import get
 from flask import Blueprint, jsonify, make_response, request
-from pymysql import Connection
 import pymysql
-from sqlalchemy import null
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin
-from flask_login import LoginManager
 
 blueprint_order = Blueprint("order", __name__, url_prefix="/order")
 
@@ -155,3 +148,86 @@ def modifyOrderList():
     finally:
         cursor.close() 
         conn.close()
+
+@blueprint_order.route("/get-all-date", methods=['POST'])
+def OrderByDate():
+    per_page=20
+    getData = request.get_json()
+    conn = None
+    cursor = None
+    try:
+        sql = """ 
+            select 
+                group_concat(order_history.item separator '#') as grouped_item,
+                group_concat(order_history.color separator '#') as grouped_color,
+                group_concat(order_history.size separator '#') as grouped_size,
+                user.name as user_name,
+                user.mobile_no as user_mobile_no,
+                order_history.pickup_date
+            FROM tb_order_history order_history 
+            LEFT JOIN tb_store store 
+            ON order_history.store_id = store.id
+            LEFT JOIN tb_user user 
+            ON order_history.user_id = user.id where 1=1
+        """
+        print(getData)
+        if (getData['userId'] != '' and getData['userId'] != None):
+            sql += " AND order_history.user_id = " + str(getData['userId'])
+        if (getData['startTime'] != '') :
+            sql += " AND order_history.created_date >= '" + getData['startTime'] + " 00:00:00'"
+        if (getData['endTime'] != '') :
+            sql += " AND order_history.created_date <= '" +  getData['endTime'] + " 23:59:59'"
+        if (getData['text'] != '') :
+            sql += " AND store.store_name like '%" + getData['text'] + "%'"
+        if (getData['storeId'] != '') :
+            sql += " AND order_history.store_id = '" + str(getData['storeId']) + "'"
+        if (getData['page']): 
+            page = getData['page'] - 1
+            start_at = page*per_page
+            sql += " LIMIT " + str(start_at) + ', ' + str(per_page)
+        # 주문내역 리스트 (판매처)일 경우,  
+        # if getData['useType'] is 'customer':
+        # sql += " ORDER BY history."
+        print(sql)            
+        # data = (order['store_id'] , order['item'], order['color'], order['size'], order['quantity'], now, now)
+        conn = pymysql.connect(host = 'meta-soft.iptime.org', # 디비 주소 //localhost
+                                user = 'root',                 # 디비 접속 계정
+                                password = 'root',             # 디비 접속 비번
+                                db = 'temp',               # 데이터 베이스 이름
+                                port = 53306,                  # 포트
+                                charset = 'utf8',
+                                cursorclass = pymysql.cursors.DictCursor)
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        row = cursor.fetchall()
+        print(row)
+        
+        sql = """ 
+            select 
+                count(*) as total_rows
+            FROM tb_order_history order_history 
+            LEFT JOIN tb_store store 
+            ON order_history.store_id = store.id
+            LEFT JOIN tb_user user 
+            ON order_history.user_id = user.id where 1=1
+        """
+        if (getData['userId'] != '' and getData['userId'] != None):
+            sql += " AND order_history.user_id = " + str(getData['userId'])
+        if (getData['startTime'] != '') :
+            sql += " AND order_history.created_date >= '" + getData['startTime'] + " 00:00:00'"
+        if (getData['endTime'] != '') :
+            sql += " AND order_history.created_date <= '" +  getData['endTime'] + " 23:59:59'"
+        if (getData['text'] != '') :
+            sql += " AND store.store_name like '%" + getData['text'] + "%'"
+        if (getData['storeId'] != '') :
+            sql += " AND order_history.store_id = '" + str(getData['storeId']) + "'"
+        cursor.execute(sql)
+        total_pages = cursor.fetchall()[0]['total_rows']
+        
+        return make_response(jsonify({'result': 'success', 'data': row, 'total_rows': total_pages}), 200)
+    except Exception as e:
+        print(e)
+        return 'false'
+    finally:
+        cursor.close() 
+        conn.close()        
