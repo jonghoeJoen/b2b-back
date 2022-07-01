@@ -110,7 +110,7 @@ def getUser():
                                 port = 53306,                  # 포트
                                 charset = 'utf8')
         cursor = conn.cursor()
-        cursor.execute(sql, request.args.get('id'))
+        cursor.execute(sql, str(request.args.get('id')))
         row = cursor.fetchone()
         print(row)
         return make_response(jsonify({'name': row[3], 'phone_no': row[10]}), 200)

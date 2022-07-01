@@ -71,6 +71,7 @@ def wholesaler_login():
                                 charset = 'utf8')
     cursor = conn.cursor()
     req = request.get_json() 
+    print(req)
     try:
         sql = """
             select
