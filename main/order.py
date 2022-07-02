@@ -166,6 +166,7 @@ def OrderByDate():
                 group_concat(order_history.available_status separator '~#~') as grouped_status,
                 group_concat(order_history.comment separator '~#~') as grouped_comment,
                 user.name as user_name,
+                user.store_name as user_store_name,
                 tb_store.store_name as store_name,
                 user.mobile_no as user_mobile_no,
                 order_history.pickup_date,
@@ -186,13 +187,19 @@ def OrderByDate():
         if (getData['endTime'] != '') :
             sql += " AND order_history.pickup_date <= '" +  getData['endTime'] + "'"
         if (getData['text'] != '') :
-            sql += " AND store.store_name like '%" + getData['text'] + "%'"
+            if getData['userType'] == 'wholesaleStore':
+                sql += " AND user.store_name like '%" + getData['text'] + "%'"
+            else: 
+                sql += " OR tb_store.store_name like '%" + getData['text'] + "%'"
+            sql += " OR order_history.item like '%" + getData['text'] + "%'"
         if (getData['storeId'] != '') :
             sql += " AND order_history.store_id = '" + str(getData['storeId']) + "'"
         # 주문내역 리스트 (판매처)일 경우,  
-        # if getData['useType'] is 'customer':
-        sql += " group by order_history.pickup_date, order_history.user_id"
-        sql += " order by order_history.pickup_date desc"
+        if getData['userType'] == 'wholesaleStore':
+            sql += " group by order_history.pickup_date, order_history.user_id"
+        else:
+             sql += " group by order_history.pickup_date, order_history.store_id"
+        sql += " order by order_history.pickup_date desc, created_date desc"
         if (getData['page']): 
             page = getData['page'] - 1
             start_at = page*per_page
