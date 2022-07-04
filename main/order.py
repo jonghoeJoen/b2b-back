@@ -39,7 +39,7 @@ def createOrder():
 
 @blueprint_order.route("/get-all", methods=['POST'])
 def Order():
-    per_page=20
+    per_page=10
     getData = request.get_json()
     conn = None
     cursor = None
@@ -151,12 +151,13 @@ def modifyOrderList():
 
 @blueprint_order.route("/get-all-date", methods=['POST'])
 def OrderByDate():
-    per_page=20
+    per_page=10
     getData = request.get_json()
     conn = None
     cursor = None
     try:
         sql = """ 
+        select * from (
             select 
                 group_concat(order_history.id separator '~#~') as grouped_id,
                 group_concat(order_history.item separator '~#~') as grouped_item,
@@ -186,12 +187,6 @@ def OrderByDate():
             sql += " AND order_history.pickup_date >= '" + getData['startTime'] + "'"
         if (getData['endTime'] != '') :
             sql += " AND order_history.pickup_date <= '" +  getData['endTime'] + "'"
-        if (getData['text'] != '') :
-            if getData['userType'] == 'wholesaleStore':
-                sql += " AND user.store_name like '%" + getData['text'] + "%'"
-            else: 
-                sql += " OR tb_store.store_name like '%" + getData['text'] + "%'"
-            sql += " OR order_history.item like '%" + getData['text'] + "%'"
         if (getData['storeId'] != '') :
             sql += " AND order_history.store_id = '" + str(getData['storeId']) + "'"
         # 주문내역 리스트 (판매처)일 경우,  
@@ -199,7 +194,15 @@ def OrderByDate():
             sql += " group by order_history.pickup_date, order_history.user_id"
         else:
              sql += " group by order_history.pickup_date, order_history.store_id"
-        sql += " order by order_history.pickup_date desc, created_date desc"
+        sql += """ ) as a 
+            where 1=1"""
+        if (getData['text'] != '') :
+            if getData['userType'] == 'wholesaleStore':
+                sql += " AND a.store_name like '%" + getData['text'] + "%'"
+            else: 
+                sql += " AND a.store_name like '%" + getData['text'] + "%'"
+            sql += " OR a.grouped_item like '%" + getData['text'] + "%'"
+        sql += """ order by a.pickup_date desc, a.created_date desc"""
         if (getData['page']): 
             page = getData['page'] - 1
             start_at = page*per_page
