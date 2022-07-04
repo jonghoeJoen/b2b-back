@@ -2,7 +2,7 @@ import datetime
 from flask import Blueprint, jsonify, make_response, request
 import pymysql
 
-blueprint_order = Blueprint("order", __name__, url_prefix="/order")
+blueprint_order = Blueprint("order", __name__, url_prefix="/api/order")
 
 @blueprint_order.route("/create-order", methods=['POST'])
 def createOrder():

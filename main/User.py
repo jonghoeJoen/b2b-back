@@ -5,7 +5,7 @@ import pymysql
 from sqlalchemy import null
 from werkzeug.security import generate_password_hash, check_password_hash
 
-blueprint_user = Blueprint("User", __name__, url_prefix="/user")
+blueprint_user = Blueprint("User", __name__, url_prefix="/api/user")
 
 @blueprint_user.route("/customer-sign-up", methods=['POST'])
 def customer_sign_up():

@@ -6,7 +6,7 @@ from sqlalchemy import null
 from werkzeug.security import generate_password_hash, check_password_hash
 import model
 
-blueprint_code = Blueprint("code", __name__, url_prefix="/code")
+blueprint_code = Blueprint("code", __name__, url_prefix="/api/code")
 
 
 @blueprint_code.route("/get-all", methods=['POST'])

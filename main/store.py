@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import model
 import math
 
-blueprint_shop = Blueprint("shop", __name__, url_prefix="/shop")
+blueprint_shop = Blueprint("shop", __name__, url_prefix="/api/shop")
 
 
 @blueprint_shop.route("/get-all", methods=['POST'])

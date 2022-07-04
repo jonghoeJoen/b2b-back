@@ -6,7 +6,7 @@ import pymysql
 from sqlalchemy import null
 from werkzeug.security import generate_password_hash, check_password_hash
 
-blueprint_favor = Blueprint("favor", __name__, url_prefix="/favor")
+blueprint_favor = Blueprint("favor", __name__, url_prefix="/api/favor")
 
 
 @blueprint_favor.route("/get-all", methods=['POST'])

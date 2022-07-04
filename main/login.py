@@ -10,7 +10,7 @@ import jwt
 import config
 
 
-blueprint_login = Blueprint("login", __name__, url_prefix="/login")
+blueprint_login = Blueprint("login", __name__, url_prefix="/api/login")
 
 @blueprint_login.route("/login", methods=['POST'])
 def login_get_info():
