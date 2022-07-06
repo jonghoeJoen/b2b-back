@@ -5,8 +5,8 @@ from . import order
 from . import store
 from . import code
 from . import storeFavor
-import pymysql
-from flask_cors import CORS, cross_origin
+from . import excelDownload
+from flask_cors import CORS
 
 app = Flask(__name__)
 
@@ -20,3 +20,4 @@ app.register_blueprint(order.blueprint_order)
 app.register_blueprint(store.blueprint_shop)
 app.register_blueprint(code.blueprint_code)
 app.register_blueprint(storeFavor.blueprint_favor)
+app.register_blueprint(excelDownload.blueprint_excel)
