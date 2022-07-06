@@ -26,4 +26,4 @@ def home():
 #     print("후" + model.PageFragment.limitOffset() % ('12', '34'))
 
 if __name__ == "__main__": 
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port = 5000)
